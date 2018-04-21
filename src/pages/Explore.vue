@@ -5,6 +5,8 @@
         </section>
         <section>
             <v-container class="my-3" grid-list-md>
+               <Experiences title="Xtravelous Xclusives" :experiences="experiences" :hideExperienceTextInTitle="false" />
+               <div class="py-4"></div>
                <Experiences title="Luzon" :experiences="experiences" />
                <div class="py-4"></div>
                <Experiences title="Visayas" :experiences="experiences" />

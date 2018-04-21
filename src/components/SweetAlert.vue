@@ -17,6 +17,9 @@ export default {
       this.icon = payload.icon
       this.message = payload.message
       this.$refs.modal.open()
+      setTimeout(() => {
+        this.$refs.modal.close()
+      }, 2000)
     })
   }
 }

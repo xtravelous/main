@@ -16,7 +16,7 @@
                     <p>
                       <v-icon color="blue darken-1">fa-user</v-icon>
                       Hosted by
-                      <a href="#" class="no-underline">{{experience.user.firstName || ''}} {{experience.user.lastName || ''}}
+                      <a @click.prevent="viewHost" class="no-underline">{{experience.user.firstName}} {{experience.user.lastName || ''}}
                         <!-- {{fullName}} -->
                       </a>
                     </p>
@@ -24,7 +24,7 @@
                   <v-flex xs6 sm6 md6 lg6 xl6>
                     <p class="text-xs-right">
                       <v-avatar :size="'65'" class="grey lighten-4">
-                        <img src="http://i.pravatar.cc/65" alt="avatar" class="elevation-1 content-placeholder">
+                        <img :src="experience.user.picture" alt="avatar" class="elevation-1 content-placeholder">
                       </v-avatar>
                     </p>
                   </v-flex>
@@ -77,22 +77,26 @@
                     <div>
                       <h4>{{experience.price | currency('₱')}} per person</h4>
                       <div>
-                        <v-icon class="star-icon orange--text">star</v-icon>
-                        <v-icon class="star-icon orange--text">star</v-icon>
-                        <v-icon class="star-icon orange--text">star</v-icon>
-                        <v-icon class="star-icon orange--text">star</v-icon>
-                        <v-icon class="star-icon">star_border</v-icon>
-                        <span>110 reviews</span>
+                        <VueStars
+                        name="experienceRating"
+                        active-color="#FB8C00"
+                        inactive-color="#999999"
+                        hover-color="#FB8C00"
+                        :max="5"
+                        :readonly="true"
+                        char="★"
+                        :value="GET_HIGHEST_RATING.rating"
+                        />
+                        <span>{{GET_REVIEWS.length}} reviews</span>
                       </div>
                     </div>
                   </v-card-title>
                   <v-card-actions>
-                    <v-btn depressed dark color="orange darken-2">Contact host</v-btn>
+                    <v-btn v-if="IS_AUTHENTICATED" depressed dark color="orange darken-2" @click="contactHost">Contact host</v-btn>
                     <v-btn @click.stop="datesAvailableDialog = true" depressed dark color="orange darken-2">See dates</v-btn>
                   </v-card-actions>
                 </v-card>
-                <Reviews class="pt-4" />
-                <v-btn flat color="orange darken-3">Read all 10 reviews</v-btn>
+                <Reviews class="pt-4" records="reviews" />
               </div>
             </v-flex>
           </v-layout>
@@ -135,6 +139,7 @@
           </v-card-text>
         </v-card>
       </v-dialog>
+      <sweet-modal blocking :icon="sweetModal.icon" ref="sweetModal">{{sweetModal.message}}</sweet-modal>
     </div>
   </template>
 
@@ -144,22 +149,35 @@
   import Reviews from '@/components/Reviews'
   import { mapGetters } from 'vuex'
   import moment from 'moment'
+  import VueStars from 'vue-stars'
   const loaderUrl = require('@/assets/spinner.gif')
+  import { AUTH } from '@/services/fireinit.js'
   export default {
     data: () => ({
       images: [],
       loaderUrl,
       datesAvailableDialog: false,
       startDate: new Date(),
-      endDate: null
+      endDate: null,
+      reviews: [],
+      sweetModal: {
+        icon: null,
+        message: null
+      }
     }),
     methods: {
       computeEndDate (day) {
         this.endDate = moment(this.startDate).add(this.experience.noOfDays, 'days').format('MMMM D')
       },
       reviewAndPay (time, id) {
-        if (!this.endDate || !this.startDate) return
-          const startDate = moment(this.startDate).format('MMMM D')
+        if (!this.endDate || !this.startDate) {
+          return false
+        }
+        if (!AUTH.currentUser) {
+          this.$events.fire('OPEN_LOGIN_DIALOG')
+          return false
+        }
+        const startDate = moment(this.startDate).format('MMMM D')
         this.$router.push({name: 'ReviewAndPay', params: { 
           id, 
           time,
@@ -169,6 +187,30 @@
           }
         }
       })
+      },
+      contactHost () {
+        this.$store.dispatch('bookings/GET_BOOKING', this.$route.params.id)
+        .then((response) => {
+          console.log(response)
+          if (response.found) {
+            this.$router.push({name: 'Message', params: { booking_id: response.data.id }})
+          } else {
+            setTimeout(() => {
+              this.sweetModal.icon = 'error'
+              this.sweetModal.message = 'No booking found.'
+              this.$refs.sweetModal.open()
+              setTimeout(() => {
+                this.$refs.sweetModal.close()
+              }, 2000)
+            }, 250)
+          }
+        })
+      },
+      viewHost () {
+        this.$router.push({name: 'HostProfile', params: {
+          id: this.experience.uid,
+          host: this.experience.user
+        }})
       }
     },
     created () {
@@ -185,16 +227,25 @@
           console.error(e)
         })
       }
+      console.log(this.experience)
+      this.$store.dispatch('reviews/GET_REVIEWS', this.$route.params.id)
+      .then((response) => {
+        this.$store.commit('reviews/SET_REVIEWS', response)
+      })
       window.scrollTo(0, 0)
       const cat = ['animals', 'people', 'tech', 'nature']
       for (let g = 1; g <= 8; g++) {
         this.images.push('http://placeimg.com/640/480/' + cat[Math.floor(Math.random() * cat.length)])
       }
     },
+    beforeDestroy () {
+      this.$store.commit('reviews/EMPTY_REVIEWS')
+    },
     components: {
       HorizontalRule,
       CarouselDecks,
-      Reviews
+      Reviews,
+      VueStars
     },
     computed: {
       position () {
@@ -211,7 +262,10 @@
         experience: 'experiences/GET_VIEWED_EXPERIENCE',
         fullName: 'accounts/GET_FULL_NAME',
         address: 'experiences/GET_COMPLETE_ADDRESS',
-        user: 'accounts/GET_USER'
+        user: 'accounts/GET_USER',
+        IS_AUTHENTICATED: 'accounts/IS_AUTHENTICATED',
+        GET_REVIEWS: 'reviews/GET_REVIEWS',
+        GET_HIGHEST_RATING: 'reviews/GET_HIGHEST_RATING'
       })
     },
     filters: {

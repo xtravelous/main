@@ -10,9 +10,9 @@
                     <v-flex xs12>
                         <CarouselDecks />
                         <div class="text-xs-center pt-2" v-show="experiences.length > 0">
-                            <v-btn class="hidden-xs-only" dark :to="{ name: 'Explore' }" large color="blue darken-1">Show all (2000+)
+                            <v-btn class="hidden-xs-only" dark :to="{ name: 'Explore' }" large color="orange darken-2">Show all (2000+)
                                 <v-icon right>chevron_right</v-icon></v-btn>
-                            <v-btn class="hidden-sm-and-up" dark block :to="{ name: 'Explore' }" large color="blue darken-1">Show all (2000+)
+                            <v-btn class="hidden-sm-and-up" dark block :to="{ name: 'Explore' }" large color="ornage darken-2">Show all (2000+)
                                 <v-icon right>chevron_right</v-icon></v-btn>
                         </div>
                     </v-flex>

@@ -6,6 +6,7 @@
             country="ph"></vue-google-autocomplete>
           <v-btn large color="orange darken-1" class="btn--inside hidden-sm-and-down" dark type="submit">
             Search <v-icon right>send</v-icon></v-btn>
+            <v-btn color="orange darken-1" class="small-button hidden-md-and-up" dark type="submit"><v-icon>search</v-icon></v-btn>
         </form>
     </v-flex>
   </v-layout>
@@ -60,6 +61,14 @@ export default {
 <style scoped>
 .btn--inside {
   margin-left: -96px;
+}
+
+.small-button {
+  position: fixed;
+  margin-top: -35px;
+  height: 30px;
+  font-size: 15px;
+  margin-left: 65px;
 }
 
 .form__field {

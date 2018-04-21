@@ -15,6 +15,8 @@ import ReviewAndPay from '@/pages/ReviewAndPay'
 import ProcessBooking from '@/pages/ProcessBooking'
 import Booking from '@/pages/Booking'
 import ExperienceBookings from '@/pages/ExperienceBookings'
+import Message from '@/pages/Message'
+import HostProfile from '@/pages/HostProfile'
 
 import store from '@/store'
 
@@ -115,6 +117,22 @@ const router = new Router({
 		component: ExperienceBookings,
 		meta: {
 			requiresAuth: true
+		}
+	},
+	{
+		path: '/q/:booking_id',
+		name: 'Message',
+		component: Message,
+		meta: {
+			requiresAuth: true
+		}
+	},
+	{
+		path: '/host/:id',
+		name: 'HostProfile',
+		component: HostProfile,
+		meta: {
+			requiresAuth: false
 		}
 	}]
 })

@@ -5,6 +5,8 @@ import accounts from './modules/accounts'
 import experiences from './modules/experiences'
 import bookings from './modules/bookings'
 import payments from './modules/payments'
+import messages from './modules/messages'
+import reviews from './modules/reviews'
 
 Vue.use(Vuex)
 
@@ -28,6 +30,8 @@ export default new Vuex.Store({
 		accounts,
 		experiences,
     bookings,
-    payments
+    payments,
+    messages,
+    reviews
 	}
 })

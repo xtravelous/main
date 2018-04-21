@@ -11,6 +11,15 @@
 							<v-container grid-list-md fluid>
 								<v-layout row wrap>
 									<v-flex xs12>
+										<v-text-field
+										prepend-icon="people_outline"
+										label="How many people are going? (including you)"
+										type="number"
+										v-model="people"
+										min="1"
+										></v-text-field>
+									</v-flex>
+									<v-flex xs12>
 										<v-select prepend-icon="credit_card" label="Pay with" :items="['Credit Card']" v-model="payment.method"></v-select>
 									</v-flex>
 									<v-flex xs6 sm6 md6 lg6 xl6>
@@ -65,10 +74,20 @@
 							<v-divider class="mt-3 mb-3"></v-divider>
 							<v-layout row wrap>
 								<v-flex xs6 sm6 md6 lg6 xl6>
+									<div class="experience-sub grey--text text--darken-2">
+										{{experience.price | currency('₱')}} x {{people}}
+									</div>
+								</v-flex>
+								<v-flex xs6 sm6 md6 lg6 xl6>
+										<div class="experience-title grey--text text--darken-3 text-xs-right">{{experience.price * people | currency('₱')}}</div>
+								</v-flex>
+							</v-layout>
+							<v-layout row wrap>
+								<v-flex xs6 sm6 md6 lg6 xl6>
 									<div class="experience-sub grey--text text--darken-2">Total (PHP)</div>
 								</v-flex>
 								<v-flex xs6 sm6 md6 lg6 xl6>
-									<div class="experience-title grey--text text--darken-3 text-xs-right">{{experience.price | currency('P')}}</div>
+									<div class="experience-title grey--text text--darken-3 text-xs-right">{{experience.price | currency('₱')}}</div>
 								</v-flex>
 							</v-layout>
 						</v-flex>
@@ -88,6 +107,7 @@ export default {
 		this.payment.billingInfo.contact = this.user.contact || null
 		this.experienceDate = Object.assign({}, this.$route.params.date)
 		this.experienceTime = Object.assign({}, this.$route.params.time)
+		this.total = this.experience.price
 	},
 	data: () => ({
 		experienceDate: {
@@ -113,27 +133,34 @@ export default {
 				contact: null
 			}
 		},
-		loading: false
+		loading: false,
+		people: 1
 	}),
 	methods: {
 		confirm () {
-			const payload = {
-				date: this.experienceDate,
-				time: this.experienceTime,
-				payment: this.payment,
-				email: this.user.email,
-				experience: this.experience,
-				userId: this.user.uid
+			const c = confirm("Are you sure?")
+			if (c) {
+				const totalAmount = this.people * this.experience.price
+				const payload = {
+					date: this.experienceDate,
+					time: this.experienceTime,
+					payment: this.payment,
+					email: this.user.email,
+					experience: this.experience,
+					userId: this.user.uid,
+					people: this.people,
+					totalAmount
+				}
+				// console.log(payload)
+				this.loading = true
+				this.$store.dispatch('bookings/CONFIRM_AND_PAY', payload)
+				.then((res) => {
+					window.location.href = res.data.payment.redirectUrl
+				})
+				.catch((e) => {
+					console.error(e)
+				})
 			}
-			console.log(payload)
-			this.loading = true
-			this.$store.dispatch('bookings/CONFIRM_AND_PAY', payload)
-			.then((res) => {
-				window.location.href = res.data.payment.redirectUrl
-			})
-			.catch((e) => {
-				console.error(e)
-			})
 		}
 	},
 	computed: {

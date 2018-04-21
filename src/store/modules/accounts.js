@@ -1,4 +1,4 @@
-import { AUTH, DB } from '@/services/fireinit.js'
+import { AUTH, DB, STORAGE } from '@/services/fireinit.js'
 const accountsRef = DB.collection('_accounts')
 
 const state = {
@@ -10,7 +10,9 @@ const state = {
     email: null,
     firstName: null,
     lastName: null,
-    type: null
+    type: null,
+    about: null,
+    picture: null
   }
 }
 
@@ -40,11 +42,15 @@ RESET_USER (state, payload) {
     email: null,
     firstName: null,
     lastName: null,
-    type: null
+    type: null,
+    about: null
   })
 },
 SET_USER_TYPE (state, payload) {
   state.isHost = payload
+},
+SET_PROFILE_PICTURE (state, url) {
+  state.user.picture = url
 }
 }
 
@@ -57,7 +63,8 @@ const actions = {
         fullName,
         email,
         contact,
-        type
+        type,
+        about: null
       }
       await accountsRef.doc(response.uid).set(data)
       commit('SET_USER', data)
@@ -68,24 +75,22 @@ const actions = {
       throw error
     }
   },
-  async AUTHENTICATE ({commit}, payload) {
+  async AUTHENTICATE ({commit, dispatch, state}, payload) {
     try {
       const response = await AUTH.signInWithEmailAndPassword(payload.email, payload.password)
       const doc = await accountsRef.doc(response.uid).get()
       const data = doc.data()
       data.uid = doc.id
-      if (data.type === payload.type) {
-        commit('SET_USER', data)
-        commit('SET_AUTH_STATE', true)
-        const isHost = data.type === 'expert' ? true : false
-        commit('SET_USER_TYPE', isHost)
-        return {success: true}
-      } else {
-        AUTH.signOut()
-        commit('RESET_USER')
-        return {success: false, message: 'Invalid account type.'}
+      if (!data.picture) {
+        data.picture = `https://robohash.org/${state.user.firstName}.png`
       }
+      commit('SET_USER', data)
+      commit('SET_AUTH_STATE', true)
+      const isHost = data.type === 'expert' ? true : false
+      commit('SET_USER_TYPE', isHost)
+      return {success: true}
     } catch (error) {
+      dispatch('SIGN_OUT')
       throw error
     }
   },
@@ -95,6 +100,9 @@ const actions = {
       if (doc.exists) {
         const data = doc.data()
         data.uid = payload.uid
+        if (!data.picture) {
+          data.picture = `https://robohash.org/${state.user.firstName}.png`
+        }
         context.commit('SET_USER', data)
         const isHost = data.type === 'expert' ? true : false
         context.commit('SET_USER_TYPE', isHost)
@@ -115,7 +123,8 @@ const actions = {
         lastName: payload.lastName,
         email: payload.email,
         contact: payload.contact,
-        type: payload.type
+        type: payload.type,
+        about: payload.about
       }
       // UPDATE FIREBASE AUTH EMAIL IF EMAIL IS NOT EQUAL TO AUTHENTICATED USER
       if (user.email !== payload.email) {
@@ -134,10 +143,12 @@ const actions = {
     try {
       const user = context.state.user
       const userData = {
-        fullName: user.fullName,
+        firstName: user.firstName,
+        lastName: user.lastName,
         email: user.email,
         contact: user.contact,
-        type: payload
+        type: payload,
+        about: null
       }
       const response = await accountsRef.doc(user.uid).set(userData)
       userData.uid = user.uid
@@ -149,21 +160,16 @@ const actions = {
       throw error
     }
   },
-  OBSERVE_AUTH_STATE (context, payload) {
-    AUTH.onAuthStateChanged(user => {
-      if (user) {
-        context.commit('SET_AUTH_STATE', true)
-        context.dispatch('GET_USER', user)
-      } else {
-        context.commit('SET_AUTH_STATE', false)
-        context.commit('SET_USER', {
-          contact: null,
-          email: null,
-          fullName: null,
-          type: null
-        })
-      }
-    })
+  async UPLOAD_PROFILE_PICTURE ({commit}, data) {
+    try {
+      const user = AUTH.currentUser
+      const storageRef = STORAGE.ref('xtravelous/profile-pictures/' + user.uid)
+      const response = await storageRef.putString(data.img, 'data_url')
+      commit('SET_PROFILE_PICTURE', response.downloadURL)
+      return await accountsRef.doc(user.uid).update({picture: response.downloadURL})
+    } catch (e) {
+      throw e
+    }
   },
   async SIGN_OUT ({commit}, payload) {
     try {

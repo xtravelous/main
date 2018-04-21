@@ -37,7 +37,15 @@ const state = {
     price: null,
     noOfDays: null,
     times: [],
-    notes: null
+    notes: null,
+    user: {
+      firstName: null,
+      lastName: null
+    },
+    coordinates: {
+      lat: 0,
+      lng: 0
+    }
   },
   myExperiences: []
 }
@@ -114,13 +122,16 @@ const actions = {
       data.eid = eid
       const user = await accountsRef.doc(data.uid).get()
       data.user = user.data()
+      if(!data.user.picture) {
+        data.user.picture = `https://robohash.org/${data.user.firstName}.png`
+      }
       commit('SET_DIRECT_LOADED_EXPERIENCE', data)
       console.log(data)
     } catch (error) {
       throw error
     }
   },
-  GET_EXPERIENCES ({commit}, payload) {
+  GET_EXPERIENCES ({commit, dispatch}, payload) {
     const experiencesSnapshot = experiencesRef.orderBy('createdAt', 'desc').limit(payload).get()
     return experiencesSnapshot.then((querySnapshot) => {
       const experiences = []
@@ -130,7 +141,54 @@ const actions = {
         experiences.push(
           accountsRef.doc(experienceData.uid).get()
           .then((userDoc) => {
+            // GET USER DATA
             experienceData.user = Object.assign({}, userDoc.data())
+            if(!experienceData.user.picture) {
+              experienceData.user.picture = `https://robohash.org/${data.user.firstName}.png`
+            }
+            return dispatch('reviews/GET_REVIEWS', experienceData.eid, {root: true})
+          })
+          .then((reviews) => {
+            // GET REVIEWS
+            if (reviews.length > 0) {
+              experienceData.reviews = reviews
+              experienceData.highestRating = reviews.reduce((prev, current) => (prev.rating > current.rating) ? prev : current)
+            } else {
+              experienceData.reviews = []
+              experienceData.highestRating = 0
+            }
+            experienceData.user.picture = 'https://robohash.org/63.143.42.243.png'
+            return experienceData
+           // return await STORAGE.ref('xtravelous/profile-pictures/' + userDoc.id).getDownloadURL()
+          })
+        )
+      })
+      return Promise.all(experiences)
+    })
+  },
+  GET_EXPERIENCES_BY_USER_ID ({commit, dispatch}, userId) {
+    const experiencesSnapshot = experiencesRef.where('uid', '==', userId).get()
+    return experiencesSnapshot.then((querySnapshot) => {
+      const experiences = []
+      querySnapshot.forEach((doc) => {
+        const experienceData = doc.data()
+        experienceData.eid = doc.id
+        experiences.push(
+          accountsRef.doc(experienceData.uid).get()
+          .then((userDoc) => {
+            // GET USER DATA
+            experienceData.user = Object.assign({}, userDoc.data())
+            return dispatch('reviews/GET_REVIEWS', experienceData.eid, {root: true})
+          })
+          .then((reviews) => {
+            // GET REVIEWS
+            if (reviews.length > 0) {
+              experienceData.reviews = reviews
+              experienceData.highestRating = reviews.reduce((prev, current) => (prev.rating > current.rating) ? prev : current)
+            } else {
+              experienceData.reviews = []
+              experienceData.highestRating = 0
+            }
             return experienceData
           })
         )

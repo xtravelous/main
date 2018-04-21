@@ -47,26 +47,33 @@ const actions = {
 		}
 	},
 	GET_BOOKINGS ({commit}, payload) {
-		const user = AUTH.currentUser
-		const bookingsPromise = bookingsRef.where('userId', '==', user.uid).where('status', '==', 'COMPLETED').get()
-		return bookingsPromise.then((querySnapshot) => {
-			const bookings = []
-			querySnapshot.forEach((doc) => {
-				const data = doc.data()
-				data.id = doc.id
-				bookings.push(
-					experiencesRef.doc(data.experienceId).get()
-					.then((experienceDoc) => {
-						data.experienceData = Object.assign({}, experienceDoc.data())
-						return accountsRef.doc(data.experienceData.uid).get()
-					})
-					.then((accountDoc) => {
-						data.experienceData.user = Object.assign({}, accountDoc.data())
-						return data
-					})
-				)
+		return new Promise((resolve, reject) => {
+			const user = AUTH.currentUser
+			const bookingsPromise = bookingsRef.where('userId', '==', user.uid).where('status', '==', 'COMPLETED').get()
+			return bookingsPromise.then((querySnapshot) => {
+				const bookings = []
+				querySnapshot.forEach((doc) => {
+					const data = doc.data()
+					data.id = doc.id
+					bookings.push(
+						experiencesRef.doc(data.experienceId).get()
+						.then((experienceDoc) => {
+							data.experienceData = Object.assign({}, experienceDoc.data())
+							return accountsRef.doc(data.experienceData.uid).get()
+						})
+						.then((accountDoc) => {
+							data.experienceData.user = Object.assign({}, accountDoc.data())
+							return data
+						})
+						)
+				})
+				const allPromises = Promise.all(bookings)
+				allPromises.then((response) => {
+					commit('SET_BOOKINGS', response)
+					resolve(response)
+				})
+				allPromises.catch((error) => reject(error))
 			})
-			return Promise.all(bookings)
 		})
 	},
 	GET_HOST_BOOKINGS ({commit}, experienceId) {
@@ -82,10 +89,27 @@ const actions = {
 						data.userData = accountDoc.data()
 						return data
 					})
-				)
+					)
 			})
 			return Promise.all(bookings)
 		})
+	},
+	async GET_BOOKING ({}, experienceId) {
+		try {
+			const response = await bookingsRef
+			.where('userId', '==', AUTH.currentUser.uid)
+			.where('experienceId', '==', experienceId)
+			.get()
+			if (response.docs.length > 0) {
+				const data = response.docs[0].data()
+				data.id = response.docs[0].id
+				return {found: true, data}
+			} else {
+				return {found: false}
+			}
+		} catch (e) {
+			throw e
+		}
 	}
 }
 

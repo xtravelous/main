@@ -45,6 +45,9 @@ export default {
 			this.icon = icon
 			this.message = message
 			this.$refs.modal.open()
+			setTimeout(() => {
+				this.$refs.sweetModal.close()
+			}, 2000)
 		},
 		redirect () {
 			this.$router.push({name: 'MyBookings'})

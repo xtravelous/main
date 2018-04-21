@@ -22,18 +22,18 @@ import store from './store'
 import firebase from 'firebase'
 import './services/fireinit'
 import VueProgressBar from 'vue-progressbar'
-import vueg from 'vueg'
+// import vueg from 'vueg'
 import 'vueg/css/transition-min.css'
 import { ImageUploader } from 'vue-image-upload-resize'
 import './assets/simple-content-placeholder.css'
 
 Vue.component('image-uploader', ImageUploader)
 
-Vue.use(vueg, router, {
-  shadow: false,
-  forwardAnim: 'fadeIn',
-  backAnim: 'fadeIn'
-})
+// Vue.use(vueg, router, {
+//   shadow: false,
+//   forwardAnim: 'fadeIn',
+//   backAnim: 'fadeIn'
+// })
 Vue.use(VueProgressBar, {
   color: '#FFFFFF',
   failedColor: 'red',

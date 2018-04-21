@@ -13,29 +13,30 @@
             <v-form v-model="valid" ref="registrationForm" lazy-validation v-show="formContainer">
                 <v-container grid-list-md>
                     <v-layout wrap>
-                        <v-flex xs6>
+                        <v-flex xs12 lg6 xl6>
                             <v-text-field :rules="basicRules" prepend-icon="account_circle" label="First name" v-model="registerData.firstName" required></v-text-field>
                         </v-flex>
-                        <v-flex xs6>
+                        <v-flex xs12 lg6 xl6>
                             <v-text-field :rules="basicRules" prepend-icon="account_circle" label="Last name" v-model="registerData.lastName" required></v-text-field>
                         </v-flex>
-                        <v-flex xs6>
+                        <v-flex xs12 lg6 xl6>
                             <v-text-field :rules="emailRules" prepend-icon="email" label="Email address" v-model="registerData.email" required></v-text-field>
                         </v-flex>
-                        <v-flex xs6>
+                        <v-flex xs12 lg6 xl6>
                             <v-text-field prepend-icon="perm_contact_calendar" label="Contact number(optional)" v-model="registerData.contact"></v-text-field>
                         </v-flex>
-                        <v-flex xs6>
+                        <v-flex xs12 lg6 xl6>
                             <v-text-field :rules="basicRules" prepend-icon="security" label="Password" type="password" v-model="registerData.password"
                                 required></v-text-field>
                         </v-flex>
-                        <v-flex xs6>
+                        <v-flex xs12 lg6 xl6>
                             <v-text-field :rules="basicRules" prepend-icon="security" label="Confirm password" type="password" required id="confirmPassword"></v-text-field>
                         </v-flex>
                     </v-layout>
                 </v-container>
                 <div class="text-xs-center">
-                    <v-btn dark depressed large @click="register">REGISTER</v-btn>
+                    <v-btn dark class="hidden-xs-only" color="orange darken-2" depressed large @click="register">REGISTER</v-btn>
+                    <v-btn block class="hidden-sm-and-up" dark color="orange darken-2" depressed large @click="register">REGISTER</v-btn>
                     <br>
                     <v-btn flat @click="close">Cancel</v-btn>
                 </div>

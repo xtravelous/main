@@ -5,14 +5,15 @@
       <v-toolbar-items class="hidden-sm-and-down">
         <v-btn flat :to="m.to" v-for="(m, i) in mainMenu":key="i">{{m.name}}</v-btn>
       </v-toolbar-items>
-      <v-btn icon v-show="searchToolbar">
+      <!-- <v-btn icon v-show="searchToolbar">
         <v-icon>search</v-icon>
-      </v-btn>
+      </v-btn> -->
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <v-btn flat v-if="!isAuthenticated" @click.stop="openLoginDialog">Log in</v-btn>
         <v-btn flat @click.stop="openRegisterSelectionDialog" v-if="!isAuthenticated">Sign up</v-btn>
         <v-btn flat class="hidden-sm-and-down" v-if="isAuthenticated && isHost" @click="$router.push({name: 'CreateExperience'})">Create Experience</v-btn>
+        <!-- <v-btn flat class="hidden-sm-and-down" v-if="isAuthenticated" @click="">Messages</v-btn> -->
         <v-menu offset-y v-if="isAuthenticated">
           <v-btn flat slot="activator">My Account <v-icon right>arrow_drop_down</v-icon></v-btn>
           <v-list>
@@ -36,7 +37,7 @@
       </v-toolbar-items>
     </v-toolbar>
     <v-content v-scroll="onScroll">
-      <router-view v-transition></router-view>
+      <router-view></router-view>
       <vue-progress-bar></vue-progress-bar>
       <v-dialog v-model="menuDialog" fullscreen :overlay="false" transition="fade-transition">
         <v-card>
@@ -60,7 +61,7 @@
       <v-dialog v-model="registerSelectionDialog" max-width="900">
         <RegistrationSelection />
       </v-dialog>
-      <v-dialog max-width="900" v-model="loginDialog" persistent>
+      <v-dialog max-width="500" v-model="loginDialog" persistent>
         <LoginForm />
       </v-dialog>
       <SweetAlert />
@@ -135,6 +136,9 @@ export default {
     this.$events.listen('closeRegisterDialog', () => this.closeRegisterDialog())
     this.$events.listen('closeLoginDialog', () => {
       this.loginDialog = false
+    })
+    this.$events.listen('OPEN_LOGIN_DIALOG', () => {
+      this.openLoginDialog()
     })
   },
   methods: {

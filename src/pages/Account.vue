@@ -4,6 +4,10 @@
       <v-card flat>
         <v-layout row wrap>
           <v-flex xs12 sm12 md3 lg3 xl3>
+            <div class="text-xs-center pa-2">
+              <img :src="getUser.picture" alt="userImage">
+              <v-btn depressed block color="orange darken-2" dark @click="openProfilePictureDialog">Update profile picture</v-btn>
+            </div>
             <v-list class="pt-0 pb-0">
               <v-list-tile ripple v-for="(item, i) in items" :key="i" @click="">
                 <v-list-tile-content>
@@ -14,14 +18,14 @@
               </v-list-tile>
             </v-list>
             <div class="pa-3">
-              <v-btn depressed block color="orange darken-1" dark @click="becomeHost('expert')" v-if="!isHost">Become a host</v-btn>
-              <v-btn depressed block color="grey darken-3" dark @click="becomeHost('traveler')" v-if="isHost">Become a user</v-btn>
+              <v-btn depressed block color="orange darken-2" dark @click="becomeHost('expert')" v-if="!isHost">Become a host</v-btn>
+              <v-btn depressed block color="primary" dark @click="becomeHost('traveler')" v-if="isHost">Become a user</v-btn>
             </div>
           </v-flex>
           <v-flex xs12 sm12 md9 lg9 xl9>
             <div class="pt-0">
               <v-card tile flat>
-                <v-card-title class="grey darken-1">
+                <v-card-title class="orange darken-2">
                   <div class="headline white--text">Required</div>
                 </v-card-title>
                 <v-card-text>
@@ -74,9 +78,17 @@
                           <v-text-field :disabled="disableProfileFields" v-model="userData.contact"></v-text-field>
                         </v-flex>
                       </v-layout>
+                      <v-layout row>
+                        <v-flex xs4>
+                          <v-subheader>About me</v-subheader>
+                        </v-flex>
+                        <v-flex xs8>
+                          <vue-editor id="user-about" v-model="userData.about" :disabled="disableProfileFields"></vue-editor>
+                        </v-flex>
+                      </v-layout>
                       <div class="text-xs-center">
                         <v-btn flat @click="activateProfileFields" v-show="editProfileButton">Edit</v-btn>
-                        <v-btn color="red lighten-1" class="white--text" @click="save()" v-show="saveProfileButton">Save</v-btn>
+                        <v-btn color="orange darken-2" class="white--text" @click="save" v-show="saveProfileButton">Save</v-btn>
                         <v-btn flat @click="cancelEdit" v-show="saveProfileButton">Cancel</v-btn>
                       </div>
                     </v-container>
@@ -87,11 +99,26 @@
           </v-flex>
         </v-layout>
       </v-card>
-      <v-dialog v-model="photoCroppieDialog">
+      <v-dialog v-model="profilePictureDialog" max-width="400">
         <v-card>
           <v-card-text>
-            <div id="croppiecontainer"></div>
+            <div class="text-xs-center">
+              <p>
+                <img :src="uploadImagePreview" alt="profpic" v-show="uploadImagePreview">
+              </p>
+              <input ref="profilePictureRef" type="file" @change="readFile">
+              <!-- <v-btn class="grey darken-3 white--text" @click="$refs.profilePictureRef.click()">Upload picture</v-btn> -->
+            </div>
+            <div class="hidden-sm-and-up mt-4" v-show="uploadImagePreview">
+              <v-btn depressed block class="orange darken-2 white--text" @click="saveProfilePicture" :disabled="saveProfilePictureButton" :loading="saveProfilePictureButton">Save</v-btn>
+              <v-btn depressed block class="grey darken-1" dark @click="profilePictureDialog = false">Cancel</v-btn>
+            </div>
           </v-card-text>
+          <v-card-actions v-show="uploadImagePreview" class="hidden-xs-only">
+            <v-spacer></v-spacer>
+            <v-btn depressed color="grey darken-1" dark @click="profilePictureDialog = false">Cancel</v-btn>
+            <v-btn depressed color="orange darken-2 white--text" :disabled="saveProfilePictureButton" :loading="saveProfilePictureButton" @click="saveProfilePicture">Save</v-btn>
+          </v-card-actions>
         </v-card>
       </v-dialog>
     </div>
@@ -100,6 +127,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import { VueEditor } from 'vue2-editor'
 export default {
   created () {
     this.userData = Object.assign({}, this.getUser)
@@ -134,7 +162,8 @@ export default {
         contact: null,
         email: null,
         fullName: null,
-        type: null
+        type: null,
+        about: null
       },
       valid: null,
       disableProfileFields: true,
@@ -147,7 +176,9 @@ export default {
       ],
       saveProfileButton: false,
       editProfileButton: true,
-      photoCroppieDialog: false
+      profilePictureDialog: false,
+      uploadImagePreview: null,
+      saveProfilePictureButton: false
     }
   },
   methods: {
@@ -202,6 +233,70 @@ export default {
           console.error(error)
         })
       }
+    },
+    openProfilePictureDialog () {
+      this.profilePictureDialog = true
+    },
+    resizeImage (img, width, height) {
+      console.log(width, height)
+      return new Promise((resolve) => {
+        // We create an image to receive the Data URI
+        const fakeImg = document.createElement('img')
+        const self = this
+        fakeImg.onload = function() {
+          // create an off-screen canvas
+          const canvas = document.createElement('canvas')
+          const ctx = canvas.getContext('2d')
+          // set its dimension to target size
+          const resizedDimensions = self.calculateAspectRatioFit(width, height)
+          canvas.width = resizedDimensions.width
+          canvas.height = resizedDimensions.height
+          // draw source image into the off-screen canvas
+          ctx.drawImage(this, 0, 0, canvas.width, canvas.height)
+          // encode image to data-uri with base64 version of compressed image
+          resolve(canvas.toDataURL())
+        }
+        fakeImg.crossOrigin = 'anonymous'
+        fakeImg.src = img
+      })
+    },
+    getImageDimensions (base64, objectURL) {
+      const img = document.createElement('img')
+      img.onload = () => {
+        this.resizeImage(objectURL, img.width, img.height)
+        .then((resizedImage) => {
+          this.uploadImagePreview = resizedImage
+        })
+      }
+      img.src = base64
+    },
+    readFile() {
+      const files = this.$refs.profilePictureRef.files
+      if (files && files[0]) {
+        console.log(files[0])
+        var FR = new FileReader()
+
+        FR.addEventListener('load', (e) => {
+          this.getImageDimensions(e.target.result, URL.createObjectURL(files[0]))
+        })
+
+        FR.readAsDataURL(files[0])
+      }
+    },
+    calculateAspectRatioFit(srcWidth, srcHeight, maxWidth=120, maxHeight=120) {
+      const ratio = Math.min(maxWidth / srcWidth, maxHeight / srcHeight)
+      return { width: srcWidth*ratio, height: srcHeight*ratio }
+    },
+    saveProfilePicture () {
+      this.$Progress.start()
+      this.saveProfilePictureButton = true
+      this.$store.dispatch('accounts/UPLOAD_PROFILE_PICTURE', {img: this.uploadImagePreview})
+      .then(() => {
+        this.$Progress.finish()
+        this.profilePictureDialog = false
+        this.saveProfilePictureButton = false
+        this.$events.fire('SHOW_NOTIFICATION', { icon: 'success', message: 'Profile picture has been successfully updated.' })
+      })
     }
   },
   computed: {
@@ -210,6 +305,9 @@ export default {
       isHost: 'accounts/IS_HOST',
       getUser: 'accounts/GET_USER'
     })
+  },
+  components: {
+    VueEditor
   }
 }
 </script>
