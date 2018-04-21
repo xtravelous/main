@@ -23,6 +23,9 @@ const actions = {
 					accountsRef.doc(data.userId).get()
 					.then((user) => {
 						data.userData = user.data()
+						if (!data.userData.picture) {
+							data.userData.picture = `https://robohash.org/${data.userData.firstName}.png`
+						}
 						return data
 					})
 				)

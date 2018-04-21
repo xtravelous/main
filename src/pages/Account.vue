@@ -4,11 +4,11 @@
       <v-card flat>
         <v-layout row wrap>
           <v-flex xs12 sm12 md3 lg3 xl3>
-            <div class="text-xs-center pa-2">
+            <div class="text-xs-center px-2 pt-2">
               <img :src="getUser.picture" alt="userImage">
               <v-btn depressed block color="orange darken-2" dark @click="openProfilePictureDialog">Update profile picture</v-btn>
             </div>
-            <v-list class="pt-0 pb-0">
+            <!-- <v-list class="pt-0 pb-0">
               <v-list-tile ripple v-for="(item, i) in items" :key="i" @click="">
                 <v-list-tile-content>
                   <v-list-tile-title>
@@ -16,8 +16,8 @@
                   </v-list-tile-title>
                 </v-list-tile-content>
               </v-list-tile>
-            </v-list>
-            <div class="pa-3">
+            </v-list> -->
+            <div class="px-2">
               <v-btn depressed block color="orange darken-2" dark @click="becomeHost('expert')" v-if="!isHost">Become a host</v-btn>
               <v-btn depressed block color="primary" dark @click="becomeHost('traveler')" v-if="isHost">Become a user</v-btn>
             </div>

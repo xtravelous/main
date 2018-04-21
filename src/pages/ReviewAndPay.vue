@@ -11,6 +11,12 @@
 							<v-container grid-list-md fluid>
 								<v-layout row wrap>
 									<v-flex xs12>
+										<div class="experience-title grey--text text--darken-2">
+											Participants limit: <span class="orange--text text--darken-2">{{participantsLimit}}</span>
+										</div>
+										<v-divider class="mt-3 mb-3"></v-divider>
+									</v-flex>
+									<v-flex xs12>
 										<v-text-field
 										prepend-icon="people_outline"
 										label="How many people are going? (including you)"
@@ -53,7 +59,7 @@
 									</v-layout>
 								</fieldset>
 								<v-btn depressed large :disabled="loading" :loading="loading" class="white--text orange darken-1 mt-4 pl-0 ml-0 hidden-xs-only" @click="confirm">Confirm and Pay</v-btn>
-								<v-btn depressed block class="white--text orange darken-1 mt-4 pl-0 ml-0 hidden-sm-and-up">Confirm and Pay</v-btn>
+								<v-btn depressed block :disabled="loading" :loading="loading" class="white--text orange darken-1 mt-4 pl-0 ml-0 hidden-sm-and-up">Confirm and Pay</v-btn>
 							</v-container>
 						</v-flex>
 						<v-flex xs12 sm12 md1 lg1 xl1></v-flex>
@@ -138,36 +144,62 @@ export default {
 	}),
 	methods: {
 		confirm () {
-			const c = confirm("Are you sure?")
-			if (c) {
-				const totalAmount = this.people * this.experience.price
-				const payload = {
-					date: this.experienceDate,
-					time: this.experienceTime,
-					payment: this.payment,
-					email: this.user.email,
-					experience: this.experience,
-					userId: this.user.uid,
-					people: this.people,
-					totalAmount
+			this.$Progress.start()
+			this.loading = true
+			this.$store.dispatch('bookings/GET_HOST_BOOKINGS', this.experience.eid)
+			.then((response) => {
+				const participantsCount = response.map((r) => {
+					if(!r.people) {
+						r.people = 1
+					}
+					return r.people
+				})
+				const totalParticipants = participantsCount.reduce((a, b) => +a + +b, 0)
+				if (this.experience.maxParticipants >= (+this.people + totalParticipants) || !this.experience.maxParticipants || this.experience.maxParticipants === 0) {
+					const c = confirm("Are you sure?")
+					if (c) {
+						const totalAmount = this.people * this.experience.price
+						const payload = {
+							date: this.experienceDate,
+							time: this.experienceTime,
+							payment: this.payment,
+							email: this.user.email,
+							experience: this.experience,
+							userId: this.user.uid,
+							people: +this.people,
+							totalAmount
+						}
+						// console.log(payload)
+						this.loading = true
+						this.$store.dispatch('bookings/CONFIRM_AND_PAY', payload)
+						.then((res) => {
+							window.location.href = res.data.payment.redirectUrl
+						})
+						.catch((e) => {
+							console.error(e)
+						})
+					}
+				} else {
+					this.$events.fire('SHOW_NOTIFICATION', { icon: 'error', message: `There are only ${this.experience.maxParticipants - totalParticipants} slots left in this experience` })
 				}
-				// console.log(payload)
-				this.loading = true
-				this.$store.dispatch('bookings/CONFIRM_AND_PAY', payload)
-				.then((res) => {
-					window.location.href = res.data.payment.redirectUrl
-				})
-				.catch((e) => {
-					console.error(e)
-				})
-			}
+				this.$Progress.finish()
+				this.loading = false
+			})
 		}
 	},
 	computed: {
 		...mapGetters({
 			user: 'accounts/GET_USER',
 			experience: 'experiences/GET_VIEWED_EXPERIENCE'
-		})
+		}),
+		participantsLimit () {
+			if (this.experience.maxParticipants) {
+				return this.experience.maxParticipants
+			}
+			else {
+				return 'OPEN'
+			}
+		}
 	}
 }
 </script>

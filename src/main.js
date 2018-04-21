@@ -26,6 +26,7 @@ import VueProgressBar from 'vue-progressbar'
 import 'vueg/css/transition-min.css'
 import { ImageUploader } from 'vue-image-upload-resize'
 import './assets/simple-content-placeholder.css'
+// import VueHead from 'vue-head'
 
 Vue.component('image-uploader', ImageUploader)
 
@@ -51,13 +52,15 @@ Vue.use(VueFirestore)
 Vue.component('vue-google-autocomplete', VueGoogleAutocomplete)
 Vue.use(VueGoogleMaps, {
   load: {
-    key: ''
+    key: 'AIzaSyA3-v5EvmQDT9tT4J7kKwaifqSi8dtCqR0',
+    libraries: 'places'
   }
 })
 Vue.use(VueProgressiveImage)
 Vue.use(Viewer)
 Vue.use(Vuetify)
 Vue.component('view-image-upload-resize', VueImageUploadResize)
+// Vue.use(VueHead)
 
 firebase.auth().onAuthStateChanged((user) => {
   store.dispatch('experiences/GET_EXPERIENCES', 10).then((response) => {

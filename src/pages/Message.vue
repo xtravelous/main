@@ -1,5 +1,5 @@
 <template>
-	<v-container grid-list-md>
+	<v-container grid-list-lg>
 		<div class="pt-1">
 			<v-card tile flat>
 				<v-card-title class="orange darken-2" dark tabs flat>
@@ -8,8 +8,25 @@
 				</v-card-title>
 				<v-card-text>
 					<v-layout row wrap>
-						<v-flex xs12 sm5 md5 lg5 xl5></v-flex>
-						<v-flex xs12 sm7 md7 lg7 xl7>
+						<v-flex xs12 sm4 md4 lg4 xl4>
+							<v-card>
+								<v-card-text v-if="hostData.id">
+									<div class="text-xs-center">
+										<v-avatar size="100px">
+											<img :src="hostData.picture" alt="profpic">
+										</v-avatar>
+										<p class="headline mt-3"><a @click.prevent="viewHost">{{hostData.firstName}} {{hostData.lastName || ''}}</a></p>
+										<p>Host</p>
+									</div>
+								</v-card-text>
+								<v-card-text v-else>
+									<div class="text-xs-center">
+										<v-progress-circular indeterminate :size="50" color="orange darken-2" v-if="loader"></v-progress-circular>
+									</div>
+								</v-card-text>
+							</v-card>
+						</v-flex>
+						<v-flex xs12 sm8 md8 lg8 xl8>
 							<v-card>
 								<v-card-text>
 									<v-text-field
@@ -25,7 +42,7 @@
 							</v-card>
 							<div class="mt-4">
 								<div class="text-xs-center">
-									<v-progress-circular indeterminate :size="50" color="primary" v-if="loader"></v-progress-circular>
+									<v-progress-circular indeterminate :size="50" color="orange darken-2" v-if="loader"></v-progress-circular>
 								</div>
 								<div v-for="m in orderBy(messages, 'createdAt', -1)" :key="m.id" class="mt-4">
 									<v-card :class="[m.userId === user.uid ? 'grey lighten-2' : '']">
@@ -57,8 +74,10 @@
 <script>
 import moment from 'moment'
 import {mapGetters} from 'vuex'
+import { DB } from '@/services/fireinit.js'
 export default {
 	created () {
+		console.log(this.$route.params)
 		if (this.$route.params.booking_id) {
 			this.traveler = Object.assign({}, this.$route.params.traveler)
 			this.loader = true
@@ -68,6 +87,7 @@ export default {
 				this.loader = false
 				this.messages = response
 			})
+			this.getHostData(this.$route.params.booking_id)
 		}
 	},
 	data: () => ({
@@ -79,7 +99,8 @@ export default {
 		sweetModal: {
 			icon: null,
 			message: null
-		}
+		},
+		hostData: {}
 	}),
 	methods: {
 		send () {
@@ -99,6 +120,27 @@ export default {
 					}, 2000)
 				}, 250)
 			})
+		},
+		async getHostData (booking_id) {
+			try {
+				const bookingDoc = await DB.collection('_bookings').doc(booking_id).get()
+				const experienceDoc = await DB.collection('_experiences').doc(bookingDoc.data().experienceId).get()
+				const accountDoc = await DB.collection('_accounts').doc(experienceDoc.data().uid).get()
+				const hostData =  accountDoc.data()
+				hostData.id = accountDoc.id
+				if (!hostData.picture) {
+					hostData.picture = `https://robohash.org/${hostData.firstName}.png`
+				}
+				this.hostData = Object.assign({}, hostData)
+			} catch (e) {
+				throw e
+			}
+		},
+		viewHost () {
+			this.$router.push({name: 'HostProfile', params: {
+				id: this.hostData.id,
+				host: this.hostData
+			}})
 		}
 	},
 	computed: {

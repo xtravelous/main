@@ -1,13 +1,16 @@
 <template>
   <v-layout :align-center="alignCenter" :justify-center="justifyCenter">
     <v-flex xs8 sm8 md8 lg8 xl8>
-        <form class="form" @submit.prevent="getExperiences">
+        <form class="form" @submit.prevent="getExperiences" v-if="showSearch">
           <vue-google-autocomplete ref="address" id="map" :classname="classname" placeholder="Type location here..." v-on:placechanged="getAddressData"
             country="ph"></vue-google-autocomplete>
           <v-btn large color="orange darken-1" class="btn--inside hidden-sm-and-down" dark type="submit">
             Search <v-icon right>send</v-icon></v-btn>
             <v-btn color="orange darken-1" class="small-button hidden-md-and-up" dark type="submit"><v-icon>search</v-icon></v-btn>
         </form>
+        <div class="text-xs-center" v-if="!showSearch">
+          <v-progress-circular indeterminate color="orange darken-2"></v-progress-circular>
+        </div>
     </v-flex>
   </v-layout>
 </template>
@@ -28,8 +31,14 @@ export default {
     return {
       address: '',
       smallerClass: 'form__field grey--text text--darken-3 form__field__width__small',
-      biggerClass: 'form__field grey--text text--darken-3 form__field__width__large'
+      biggerClass: 'form__field grey--text text--darken-3 form__field__width__large',
+      showSearch: false
     }
+  },
+  mounted () {
+    setTimeout(() => {
+      this.showSearch = true
+    }, 1000)
   },
   methods: {
     getAddressData (addressData, placeResultData, id) {
@@ -64,11 +73,11 @@ export default {
 }
 
 .small-button {
-  position: fixed;
-  margin-top: -35px;
-  height: 30px;
-  font-size: 15px;
-  margin-left: 65px;
+  position: relative;
+  margin-top: -55px;
+  height: 25px;
+  font-size: 12px;
+  margin-left: 185px;
 }
 
 .form__field {

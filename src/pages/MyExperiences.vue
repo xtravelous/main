@@ -35,7 +35,7 @@
 				</v-flex>
 			</v-layout>
 		</v-container>
-		<v-dialog v-model="bookingsDialog" persistent max-width="600px">
+		<v-dialog v-model="bookingsDialog" scrollable persistent max-width="600px">
 			<v-card>
 				<v-card-title>
 					<span class="headline">Bookings</span>
@@ -44,7 +44,7 @@
 						<v-icon>close</v-icon>
 					</v-btn>
 				</v-card-title>
-				<v-card-text class="pa-0">
+				<v-card-text class="pa-0" style="height: 400px;">
 					<div class="text-xs-center pa-3" v-show="bookingsSpinner">
 						<v-progress-circular indeterminate :size="50" color="orange darken-1"></v-progress-circular>
 					</div>

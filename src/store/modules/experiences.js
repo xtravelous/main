@@ -93,6 +93,8 @@ const actions = {
         noOfDays: payload.noOfDays,
         times: payload.times,
         uid: rootState.accounts.user.uid,
+        maxParticipants: payload.maxParticipants,
+        exclusive: payload.exclusive,
         coordinates: {
           lat: null,
           lng: null
@@ -157,7 +159,6 @@ const actions = {
               experienceData.reviews = []
               experienceData.highestRating = 0
             }
-            experienceData.user.picture = 'https://robohash.org/63.143.42.243.png'
             return experienceData
            // return await STORAGE.ref('xtravelous/profile-pictures/' + userDoc.id).getDownloadURL()
           })
@@ -178,6 +179,9 @@ const actions = {
           .then((userDoc) => {
             // GET USER DATA
             experienceData.user = Object.assign({}, userDoc.data())
+            if(!experienceData.user.picture) {
+              experienceData.user.picture = `https://robohash.org/${data.user.firstName}.png`
+            }
             return dispatch('reviews/GET_REVIEWS', experienceData.eid, {root: true})
           })
           .then((reviews) => {

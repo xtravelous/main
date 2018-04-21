@@ -174,9 +174,18 @@
                             <br>
                             <vue-editor v-model="experienceData.notes"></vue-editor>
                           </v-flex>
+                          <v-flex xs12 sm12 md12 lg12 xl12>
+                            <br>
+                            <div class="title">Max number of participants</div>
+                            <div class="body-1">
+                              Leave to open for all (no maximum participants)
+                            </div>
+                          </v-flex>
+                          <v-flex xs12>
+                            <v-text-field placeholder="Enter participant count here" type="number" min="1" v-model="experienceData.maxParticipants" hint="leave as 0 if no maximum participants"></v-text-field> 
+                          </v-flex>
                           <v-flex xs12 sm12 md12 lg12 xl12 v-if="getUser.admin">
-                            <div style="height: 20px;"></div>
-                           <v-checkbox color="orange darken-2" label="Add to Xtravelous Xclusives?" v-model="experienceData.xclusive"></v-checkbox>
+                           <v-checkbox color="orange darken-2" label="Add to Xtravelous Xclusives?" v-model="experienceData.exclusive"></v-checkbox>
                           </v-flex>
                         </v-container>
                       </div>
@@ -244,7 +253,8 @@
             noOfDays: 1,
             times: [],
             notes: null,
-            exclusive: false
+            exclusive: false,
+            maxParticipants: 0
           },
           imageUploaderContainer: false,
           uploadCoverPhotoBtn: false,
@@ -332,6 +342,7 @@
       if (location.zipCode) {
         this.experienceData.formattedAddress += location.zipCode
       }
+      this.experienceData.maxParticipants = +this.experienceData.maxParticipants
       const r = confirm('Are you sure?')
       if (r) {
         this.submitLoadingButton = true

@@ -24,6 +24,7 @@
     "vue-events": "^3.1.0",
     "vue-firestore": "^0.2.6",
     "vue-google-autocomplete": "^1.1.0",
+    "vue-head": "^2.0.12",
     "vue-image-upload-resize": "^1.1.5",
     "vue-progressbar": "^0.7.4",
     "vue-progressive-image": "^2.4.4",
