@@ -23,7 +23,7 @@
                   </v-flex>
                   <v-flex xs6 sm6 md6 lg6 xl6>
                     <p class="text-xs-right">
-                      <v-avatar :size="'65'" class="grey lighten-4">
+                      <v-avatar :size="'65'" class="grey lighten-4" :tile="experience.user.noPicture">
                         <img :src="experience.user.picture" alt="avatar" class="elevation-1 content-placeholder">
                       </v-avatar>
                     </p>
@@ -114,192 +114,229 @@
               <div class="headline">When do you want to go?</div>
             </v-card-title>
             <v-card-text>
-              <vee-date-picker is-expanded v-model="startDate" @input="computeEndDate" :min-date="new Date()" is-inline tint-color="#F57C00"
+              <vee-date-picker v-if="experience.blockedDays" :disabled-dates='{ weekdays: experience.blockedDays  }' is-expanded v-model="startDate" @input="computeEndDate" :min-date="new Date()" is-inline tint-color="#F57C00"
               show-caps>
             </vee-date-picker>
-            <div class="mt-3 mb-2 title grey--text text--darken-2">
-              No of days: {{experience.noOfDays}}
-            </div>
-            <div class="mt-3 mb-2 title grey--text text--darken-2" v-if="endDate">
-              {{startDate | simpleDate}} - {{ endDate }}
-            </div>
-            <v-list>
-              <template v-for="(time, i) in experience.times">
-                <v-divider v-show="i"></v-divider>
-                <v-list-tile :key="i">
-                  <v-list-tile-content>
-                    <v-list-tile-title>{{ time.from }} - {{ time.to }}</v-list-tile-title>
-                  </v-list-tile-content>
-                  <v-list-tile-action>
-                    <v-btn depressed color="orange darken-2" dark @click="reviewAndPay(time, experience.eid)">Choose</v-btn>
-                  </v-list-tile-action>
-                </v-list-tile>
-              </template>
-            </v-list>
-          </v-card-text>
-        </v-card>
-      </v-dialog>
-      <sweet-modal blocking :icon="sweetModal.icon" ref="sweetModal">{{sweetModal.message}}</sweet-modal>
-    </div>
-  </template>
+            <vee-date-picker v-else is-expanded v-model="startDate" @input="computeEndDate" :min-date="new Date()" is-inline tint-color="#F57C00"
+            show-caps>
+          </vee-date-picker>
+          <div class="mt-3 mb-2 title grey--text text--darken-2">
+            No of days: {{experience.noOfDays}} 
+          </div>
+          <div class="mt-3 mb-2 title grey--text text--darken-2" v-if="endDate">
+            {{startDate | simpleDate}} - {{ endDate }}
+          </div>
+          <v-list>
+            <template v-for="(time, i) in experience.times">
+              <v-divider v-show="i"></v-divider>
+              <v-list-tile :key="i">
+                <v-list-tile-content>
+                  <v-list-tile-title>{{ time.from }} - {{ time.to }}</v-list-tile-title>
+                </v-list-tile-content>
+                <v-list-tile-action>
+                  <v-btn depressed color="orange darken-2" dark @click="reviewAndPay(time, experience.eid)">Choose</v-btn>
+                </v-list-tile-action>
+              </v-list-tile>
+            </template>
+          </v-list>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+    <sweet-modal blocking :icon="sweetModal.icon" ref="sweetModal">{{sweetModal.message}}</sweet-modal>
+  </div>
+</template>
 
-  <script>
-  import HorizontalRule from '@/components/HorizontalRule'
-  import CarouselDecks from '@/components/CarouselDecks'
-  import Reviews from '@/components/Reviews'
-  import { mapGetters } from 'vuex'
-  import moment from 'moment'
-  import VueStars from 'vue-stars'
-  const loaderUrl = require('@/assets/spinner.gif')
-  import { AUTH } from '@/services/fireinit.js'
-  export default {
-    data: () => ({
-      images: [],
-      loaderUrl,
-      datesAvailableDialog: false,
-      startDate: new Date(),
-      endDate: null,
-      reviews: [],
-      sweetModal: {
-        icon: null,
-        message: null
+<script>
+import HorizontalRule from '@/components/HorizontalRule'
+import CarouselDecks from '@/components/CarouselDecks'
+import Reviews from '@/components/Reviews'
+import { mapGetters } from 'vuex'
+import moment from 'moment'
+import VueStars from 'vue-stars'
+const loaderUrl = require('@/assets/spinner.gif')
+import { AUTH } from '@/services/fireinit.js'
+export default {
+  data: () => ({
+    images: [],
+    loaderUrl,
+    datesAvailableDialog: false,
+    startDate: new Date(),
+    endDate: null,
+    reviews: [],
+    sweetModal: {
+      icon: null,
+      message: null
+    }
+  }),
+  methods: {
+    computeEndDate (day) {
+      let date = moment(this.startDate)
+      const openDates = [date.format('MMMM D')]
+      while (openDates.length !== +this.experience.noOfDays) {
+        date = date.add(1, 'days');
+        console.log('condition', date.isoWeekday())
+        const isoWeekday = this.dateToCalendarDigit(date.isoWeekday())
+        if (!this.experience.blockedDays.includes(isoWeekday)) {
+          openDates.push(date.format('MMMM D'));
+        }
       }
-    }),
-    methods: {
-      computeEndDate (day) {
-        this.endDate = moment(this.startDate).add(this.experience.noOfDays, 'days').format('MMMM D')
-      },
-      reviewAndPay (time, id) {
-        if (!this.endDate || !this.startDate) {
-          return false
-        }
-        if (!AUTH.currentUser) {
-          this.$events.fire('OPEN_LOGIN_DIALOG')
-          return false
-        }
-        const startDate = moment(this.startDate).format('MMMM D')
-        this.$router.push({name: 'ReviewAndPay', params: { 
-          id, 
-          time,
-          date: {
-            from: startDate,
-            end: this.endDate
-          }
-        }
-      })
-      },
-      contactHost () {
-        this.$store.dispatch('bookings/GET_BOOKING', this.$route.params.id)
-        .then((response) => {
-          console.log(response)
-          if (response.found) {
-            this.$router.push({name: 'Message', params: { booking_id: response.data.id }})
-          } else {
-            setTimeout(() => {
-              this.sweetModal.icon = 'error'
-              this.sweetModal.message = 'No booking found.'
-              this.$refs.sweetModal.open()
-              setTimeout(() => {
-                this.$refs.sweetModal.close()
-              }, 2000)
-            }, 250)
-          }
-        })
-      },
-      viewHost () {
-        this.$router.push({name: 'HostProfile', params: {
-          id: this.experience.uid,
-          host: this.experience.user
-        }})
-      }
+      this.endDate = openDates[openDates.length - 1]
     },
-    created () {
-      if (this.experiences.length > 0) {
-        this.$store.commit('experiences/SET_EXPERIENCE', this.$route.params.id)
-      } else {
-        this.$Progress.start()
-        this.$store.dispatch('experiences/FETCH_EXPERIENCE', this.$route.params.id)
-        .then(() => {
-          this.$Progress.finish()
-        })
-        .catch((e) => {
-          this.$Progress.fail()
-          console.error(e)
-        })
+    dateToCalendarDigit (d) {
+      if (d === 7) {
+        d = 1
       }
-      console.log(this.experience)
-      this.$store.dispatch('reviews/GET_REVIEWS', this.$route.params.id)
+      else if (d === 6) {
+        d = 7
+      }
+      else if (d === 5) {
+        d = 6
+      }
+      else if (d === 4) {
+        d = 5
+      }
+      else if (d === 3) {
+        d = 4
+      }
+      else if (d === 2) {
+        d = 3
+      }
+      else if (d === 1) {
+        d = 2
+      }
+      return d
+    },
+    reviewAndPay (time, id) {
+      if (!this.endDate || !this.startDate) {
+        return false
+      }
+      if (!AUTH.currentUser) {
+        this.$events.fire('OPEN_LOGIN_DIALOG')
+        return false
+      }
+      const startDate = moment(this.startDate).format('MMMM D')
+      this.$router.push({name: 'ReviewAndPay', params: { 
+        id, 
+        time,
+        date: {
+          from: startDate,
+          end: this.endDate
+        }
+      }
+    })
+    },
+    contactHost () {
+      this.$store.dispatch('bookings/GET_BOOKING', this.$route.params.id)
       .then((response) => {
-        this.$store.commit('reviews/SET_REVIEWS', response)
-      })
-      window.scrollTo(0, 0)
-      const cat = ['animals', 'people', 'tech', 'nature']
-      for (let g = 1; g <= 8; g++) {
-        this.images.push('http://placeimg.com/640/480/' + cat[Math.floor(Math.random() * cat.length)])
-      }
-    },
-    beforeDestroy () {
-      this.$store.commit('reviews/EMPTY_REVIEWS')
-    },
-    components: {
-      HorizontalRule,
-      CarouselDecks,
-      Reviews,
-      VueStars
-    },
-    computed: {
-      position () {
-        switch (this.$vuetify.breakpoint.name) {
-          case 'xs': return 'static'
-          case 'sm': return 'static'
-          case 'md': return 'static'
-          case 'lg': return 'static'
-          case 'xl': return 'static'
+        console.log(response)
+        if (response.found) {
+          this.$router.push({name: 'Message', params: { booking_id: response.data.id }})
+        } else {
+          setTimeout(() => {
+            this.sweetModal.icon = 'error'
+            this.sweetModal.message = 'No booking found.'
+            this.$refs.sweetModal.open()
+            setTimeout(() => {
+              this.$refs.sweetModal.close()
+            }, 2000)
+          }, 250)
         }
-      },
-      ...mapGetters({
-        experiences: 'experiences/GET_EXPERIENCES',
-        experience: 'experiences/GET_VIEWED_EXPERIENCE',
-        fullName: 'accounts/GET_FULL_NAME',
-        address: 'experiences/GET_COMPLETE_ADDRESS',
-        user: 'accounts/GET_USER',
-        IS_AUTHENTICATED: 'accounts/IS_AUTHENTICATED',
-        GET_REVIEWS: 'reviews/GET_REVIEWS',
-        GET_HIGHEST_RATING: 'reviews/GET_HIGHEST_RATING'
       })
     },
-    filters: {
-      simpleDate (val) {
-        return moment(val).format('MMMM D')
+    viewHost () {
+      this.$router.push({name: 'HostProfile', params: {
+        id: this.experience.uid,
+        host: this.experience.user
+      }})
+    }
+  },
+  created () {
+    if (this.experiences.length > 0) {
+      this.$store.commit('experiences/SET_EXPERIENCE', this.$route.params.id)
+    } else {
+      this.$Progress.start()
+      this.$store.dispatch('experiences/FETCH_EXPERIENCE', this.$route.params.id)
+      .then(() => {
+        this.$Progress.finish()
+      })
+      .catch((e) => {
+        this.$Progress.fail()
+        console.error(e)
+      })
+    }
+    console.log(this.experience)
+    this.$store.dispatch('reviews/GET_REVIEWS', this.$route.params.id)
+    .then((response) => {
+      this.$store.commit('reviews/SET_REVIEWS', response)
+    })
+    window.scrollTo(0, 0)
+    const cat = ['animals', 'people', 'tech', 'nature']
+    for (let g = 1; g <= 8; g++) {
+      this.images.push('http://placeimg.com/640/480/' + cat[Math.floor(Math.random() * cat.length)])
+    }
+  },
+  beforeDestroy () {
+    this.$store.commit('reviews/EMPTY_REVIEWS')
+  },
+  components: {
+    HorizontalRule,
+    CarouselDecks,
+    Reviews,
+    VueStars
+  },
+  computed: {
+    position () {
+      switch (this.$vuetify.breakpoint.name) {
+        case 'xs': return 'static'
+        case 'sm': return 'static'
+        case 'md': return 'static'
+        case 'lg': return 'static'
+        case 'xl': return 'static'
       }
     },
-    watch: {
-      '$route.params.id' (val) {
-        this.$store.commit('experiences/SET_EXPERIENCE', val)
-        window.scrollTo(0, 0)
-      }
+    ...mapGetters({
+      experiences: 'experiences/GET_EXPERIENCES',
+      experience: 'experiences/GET_VIEWED_EXPERIENCE',
+      fullName: 'accounts/GET_FULL_NAME',
+      address: 'experiences/GET_COMPLETE_ADDRESS',
+      user: 'accounts/GET_USER',
+      IS_AUTHENTICATED: 'accounts/IS_AUTHENTICATED',
+      GET_REVIEWS: 'reviews/GET_REVIEWS',
+      GET_HIGHEST_RATING: 'reviews/GET_HIGHEST_RATING'
+    })
+  },
+  filters: {
+    simpleDate (val) {
+      return moment(val).format('MMMM D')
+    }
+  },
+  watch: {
+    '$route.params.id' (val) {
+      this.$store.commit('experiences/SET_EXPERIENCE', val)
+      window.scrollTo(0, 0)
     }
   }
-  </script>
+}
+</script>
 
-  <style scoped>
-  .bold {
-   font-weight: bold;
- }
+<style scoped>
+.bold {
+ font-weight: bold;
+}
 
- .justify {
-   text-align: justify;
- }
+.justify {
+ text-align: justify;
+}
 
- .event-details {
-   padding-top: 50px;
- }
+.event-details {
+ padding-top: 50px;
+}
 
- .no-underline {
-   text-decoration: none;
- }
+.no-underline {
+ text-decoration: none;
+}
 
- .card-img {
+.card-img {
   height: auto;
   width: 100%;
   max-width: 100%;

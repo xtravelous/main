@@ -2,7 +2,7 @@
 	<v-container>
 		<div class="pt-1">
 			<v-card tile flat>
-				<v-card-title class="grey darken-1" dark tabs flat>
+				<v-card-title class="orange" dark tabs flat>
 					<div class="headline white--text">Review and Pay</div>
 				</v-card-title>
 				<v-card-text>

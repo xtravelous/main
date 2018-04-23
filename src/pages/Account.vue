@@ -5,8 +5,10 @@
         <v-layout row wrap>
           <v-flex xs12 sm12 md3 lg3 xl3>
             <div class="text-xs-center px-2 pt-2">
-              <img :src="getUser.picture" alt="userImage">
-              <v-btn depressed block color="orange darken-2" dark @click="openProfilePictureDialog">Update profile picture</v-btn>
+              <v-avatar size="200px" tile>
+                <img :src="getUser.picture" alt="userImage">
+              </v-avatar>
+              <v-btn depressed block color="orange" dark @click="openProfilePictureDialog">Update profile picture</v-btn>
             </div>
             <!-- <v-list class="pt-0 pb-0">
               <v-list-tile ripple v-for="(item, i) in items" :key="i" @click="">
@@ -18,14 +20,14 @@
               </v-list-tile>
             </v-list> -->
             <div class="px-2">
-              <v-btn depressed block color="orange darken-2" dark @click="becomeHost('expert')" v-if="!isHost">Become a host</v-btn>
+              <v-btn depressed block color="orange" dark @click="becomeHost('expert')" v-if="!isHost">Become a host</v-btn>
               <v-btn depressed block color="primary" dark @click="becomeHost('traveler')" v-if="isHost">Become a user</v-btn>
             </div>
           </v-flex>
           <v-flex xs12 sm12 md9 lg9 xl9>
             <div class="pt-0">
               <v-card tile flat>
-                <v-card-title class="orange darken-2">
+                <v-card-title class="orange">
                   <div class="headline white--text">Required</div>
                 </v-card-title>
                 <v-card-text>

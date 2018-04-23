@@ -5,7 +5,7 @@
     <div v-for="(r, i) in limitBy(GET_REVIEWS, 8)" :key="r.id">
       <v-list three-line style="background: inherit;">
         <v-list-tile avatar>
-          <v-list-tile-avatar>
+          <v-list-tile-avatar :tile="r.user.noPicture">
             <img :src="r.user.picture" alt="avatar">
           </v-list-tile-avatar>
           <v-list-tile-content>
@@ -45,7 +45,7 @@
           <div v-for="(r, i) in GET_REVIEWS" :key="r.id">
             <v-list three-line style="background: inherit;">
               <v-list-tile avatar>
-                <v-list-tile-avatar>
+                <v-list-tile-avatar :tile="r.user.noPicture">
                   <img :src="r.user.picture" alt="avatar">
                 </v-list-tile-avatar>
                 <v-list-tile-content>

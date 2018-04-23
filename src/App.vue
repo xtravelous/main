@@ -1,6 +1,6 @@
 <template>
   <v-app light>
-    <v-toolbar color="grey darken-3" app fixed clipped-left dark :dense="dense">
+    <v-toolbar color="orange" app fixed clipped-left dark :dense="dense">
       <v-toolbar-side-icon class="hidden-md-and-up" @click.stop="$store.commit('toggleMenuDialog')"></v-toolbar-side-icon>
       <v-toolbar-items class="hidden-sm-and-down">
         <v-btn flat :to="m.to" v-for="(m, i) in mainMenu":key="i">{{m.name}}</v-btn>

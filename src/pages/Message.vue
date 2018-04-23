@@ -12,7 +12,7 @@
 							<v-card>
 								<v-card-text v-if="hostData.id">
 									<div class="text-xs-center">
-										<v-avatar size="100px">
+										<v-avatar size="100px" :tile="hostData.noPicture">
 											<img :src="hostData.picture" alt="profpic">
 										</v-avatar>
 										<p class="headline mt-3"><a @click.prevent="viewHost">{{hostData.firstName}} {{hostData.lastName || ''}}</a></p>

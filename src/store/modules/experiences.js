@@ -4,6 +4,7 @@ import axios from 'axios'
 const experiencesRef = DB.collection('_experiences')
 const accountsRef = DB.collection('_accounts')
 const expStorageRef = STORAGE.ref('xtravelous/experiences')
+const defaultProfilePicture = require('@/assets/default.png')
 
 function uploadCover (id, coverPhoto) {
   const coverStorage = expStorageRef.child(`${id}/cover`)
@@ -125,7 +126,8 @@ const actions = {
       const user = await accountsRef.doc(data.uid).get()
       data.user = user.data()
       if(!data.user.picture) {
-        data.user.picture = `https://robohash.org/${data.user.firstName}.png`
+        data.user.noPicture = true
+        data.user.picture = defaultProfilePicture
       }
       commit('SET_DIRECT_LOADED_EXPERIENCE', data)
       console.log(data)
@@ -146,7 +148,8 @@ const actions = {
             // GET USER DATA
             experienceData.user = Object.assign({}, userDoc.data())
             if(!experienceData.user.picture) {
-              experienceData.user.picture = `https://robohash.org/${data.user.firstName}.png`
+              experienceData.user.noPicture = true
+              experienceData.user.picture = defaultProfilePicture
             }
             return dispatch('reviews/GET_REVIEWS', experienceData.eid, {root: true})
           })
@@ -180,7 +183,8 @@ const actions = {
             // GET USER DATA
             experienceData.user = Object.assign({}, userDoc.data())
             if(!experienceData.user.picture) {
-              experienceData.user.picture = `https://robohash.org/${data.user.firstName}.png`
+              experienceData.user.noPicture = true
+              experienceData.user.picture = defaultProfilePicture
             }
             return dispatch('reviews/GET_REVIEWS', experienceData.eid, {root: true})
           })

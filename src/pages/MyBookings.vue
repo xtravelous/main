@@ -4,7 +4,7 @@
 			<v-layout row wrap>
 				<v-flex xs12>
 					<v-card tile flat>
-						<v-toolbar color="orange darken-2" dark tabs flat>
+						<v-toolbar color="orange" dark tabs flat>
 							<v-toolbar-title class="headline">My Bookings</v-toolbar-title>
 							<v-spacer></v-spacer>
 							<v-text-field v-model="search" single-line placeholder="Search a booking..." color="white" hide-details append-icon="search"></v-text-field>

@@ -1,5 +1,6 @@
 import { AUTH, DB, STORAGE } from '@/services/fireinit.js'
 const accountsRef = DB.collection('_accounts')
+const defaultProfilePicture = require('@/assets/default.png')
 
 const state = {
   menuDialog: false,
@@ -50,6 +51,7 @@ SET_USER_TYPE (state, payload) {
   state.isHost = payload
 },
 SET_PROFILE_PICTURE (state, url) {
+  delete state.user.noPicture
   state.user.picture = url
 }
 }
@@ -82,7 +84,8 @@ const actions = {
       const data = doc.data()
       data.uid = doc.id
       if (!data.picture) {
-        data.picture = `https://robohash.org/${state.user.firstName}.png`
+        data.noPicture = true
+        data.picture = defaultProfilePicture
       }
       commit('SET_USER', data)
       commit('SET_AUTH_STATE', true)
@@ -101,7 +104,8 @@ const actions = {
         const data = doc.data()
         data.uid = payload.uid
         if (!data.picture) {
-          data.picture = `https://robohash.org/${state.user.firstName}.png`
+          data.noPicture = true
+          data.picture = defaultProfilePicture
         }
         context.commit('SET_USER', data)
         const isHost = data.type === 'expert' ? true : false

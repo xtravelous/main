@@ -147,6 +147,12 @@
                             <v-flex xs12 sm12 md4 lg4 xl4>
                               <v-select :items="numberOfDays" bottom v-model="experienceData.noOfDays" label="Choose..."></v-select>
                             </v-flex>
+                            <v-flex xs12 sm12 md12 lg12 xl12>
+                              <div class="title">Block days</div>
+                            </v-flex>
+                            <v-flex xs12 sm12 md4 lg4 xl4>
+                              <v-select multiple :items="days" bottom v-model="experienceData.blockedDays" label="Choose..."></v-select>
+                            </v-flex>
                           </v-layout>
                         </v-container>
                       </div>
@@ -254,7 +260,8 @@
             times: [],
             notes: null,
             exclusive: false,
-            maxParticipants: 0
+            maxParticipants: 0,
+            blockedDays: []
           },
           imageUploaderContainer: false,
           uploadCoverPhotoBtn: false,
@@ -270,7 +277,37 @@
           allowedMinutes: [0, 30],
           timePickerDialog: false,
           submitLoadingButton: false,
-          timeArray: []
+          timeArray: [],
+          days: [
+            {
+              text: 'Sunday',
+              value: 7
+            },
+            {
+              text: 'Monday',
+              value: 1
+            },
+            {
+              text: 'Tuesday',
+              value: 2
+            },
+            {
+              text: 'Wednesday',
+              value: 3
+            },
+            {
+              text: 'Thursday',
+              value: 4
+            },
+            {
+              text: 'Friday',
+              value: 5
+            },
+            {
+              text: 'Saturday',
+              value: 6
+            }
+          ]
         }
       },
       created () {

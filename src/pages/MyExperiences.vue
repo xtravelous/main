@@ -4,7 +4,7 @@
 			<v-layout row wrap>
 				<v-flex xs12>
 					<v-card tile flat>
-						<v-toolbar color="orange darken-2" dark flat>
+						<v-toolbar color="orange" dark flat>
 							<v-toolbar-title class="headline">My Experiences</v-toolbar-title>
 							<v-spacer></v-spacer>
 							<v-text-field v-model="search" single-line placeholder="Search an experience..." color="white" hide-details append-icon="search"></v-text-field>

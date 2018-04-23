@@ -1,0 +1,18 @@
+calendar
+1 - sunday
+2 - monday
+3 - tuesday
+4 - wed
+5 - thu
+6 - fri
+7 - saturday
+
+moment
+
+7 sunday
+1 - monday
+2 - tuesday
+3 - wed
+4 - thu
+5 - fri
+6 - saturday

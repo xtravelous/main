@@ -1,6 +1,6 @@
 <template>
     <div class="banner text-xs-center" :style="{ 'padding-top': paddingTop }">
-      <img src="@/assets/_banner.jpg" alt="Banner" style="width: 100%;" class="elevation-2 responsive-img" />
+      <img src="@/assets/compressed-and-dimmed-jumpshot.jpg" alt="Banner" style="width: 100%;" class="elevation-2 responsive-img" />
       <div class="banner-content text-xs-center" :style="{ top: logoPosition }">
         <img src="@/assets/logo.png" alt="Logo" :style="{ width: logoWidth }" class="responsive-img" />
         <SearchBar />

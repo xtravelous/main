@@ -1,6 +1,7 @@
 import { AUTH, DB, STORAGE } from '@/services/fireinit.js'
 const reviewsRef = DB.collection('_reviews')
 const accountsRef = DB.collection('_accounts')
+const defaultProfilePicture = require('@/assets/default.png')
 
 const state = {
 	reviews: []
@@ -47,7 +48,8 @@ const actions = {
 			const user = await accountsRef.doc(AUTH.currentUser.uid).get()
 			data.user = user.data()
 			if(!data.user.picture) {
-				data.user.picture = `https://robohash.org/${data.user.firstName}.png`
+				data.user.noPicture = true
+				data.user.picture = defaultProfilePicture
 			}
 			commit('ADD_REVIEW', data)
 			return data
@@ -66,9 +68,9 @@ const actions = {
 					accountsRef.doc(reviewData.userId).get()
 					.then((userDoc) => {
 						reviewData.user = Object.assign({}, userDoc.data())
-						reviewData.user.picture = 'https://robohash.org/63.143.42.243.png'
 						if(!reviewData.user.picture ) {
-							reviewData.user.picture = `https://robohash.org/${data.user.firstName}.png`
+							reviewData.user.noPicture = true
+							reviewData.user.picture = defaultProfilePicture
 						}
 						return reviewData
 					})

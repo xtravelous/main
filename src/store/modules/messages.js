@@ -1,6 +1,7 @@
 import { AUTH, DB } from '@/services/fireinit.js'
 const messagesRef = DB.collection('_messages')
 const accountsRef = DB.collection('_accounts')
+const defaultProfilePicture = require('@/assets/default.png')
 
 const state = {
 }
@@ -24,7 +25,8 @@ const actions = {
 					.then((user) => {
 						data.userData = user.data()
 						if (!data.userData.picture) {
-							data.userData.picture = `https://robohash.org/${data.userData.firstName}.png`
+							data.userData.noPicture = true
+							data.userData.picture = defaultProfilePicture
 						}
 						return data
 					})
